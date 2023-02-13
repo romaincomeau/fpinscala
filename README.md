@@ -1,1 +1,1 @@
-fpinscala progression
+Learning functional programming in scala w/ fpinscala
