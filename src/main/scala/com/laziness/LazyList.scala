@@ -39,10 +39,28 @@ enum LazyList[+A]:
 
     go(this)
 
-  def take(n: Int): LazyList[A] = this match
-    case Cons(h, t) if n > 1  => cons(h, t().take(n - 1))
-    case Cons(h, t) if n == 1 => cons(h, empty)
+  def takeWhile(p: A => Boolean): LazyList[A] = this match
+    case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
     case _                    => empty
+
+  def exists(p: A => Boolean): Boolean = this match
+    case Cons(h, t) => p(h()) || t().exists(p)
+    case _          => false
+
+  // the arrow `=>` in front of the argument type B means that the function
+  // `f` takes its second arg by name and may choose not to evaluate it
+  def foldRight[B](z: => B)(f: (A, => B) => B): B = this match
+    case Cons(h, t) => f(h(), t().foldRight(z)(f))
+    case _          => z
+
+  def existsViaFoldRight(p: A => Boolean): Boolean =
+    foldRight(false)((a, b) => p(a) || b)
+
+  def forAll(p: A => Boolean): Boolean =
+    foldRight(true)((a, b) => p(a) && b)
+
+  def takeWhileViaFoldRight(p: A => Boolean): LazyList[A] =
+    foldRight(empty)((a, b) => if(p(a)) then cons(a, b) else empty)
 
 object LazyList:
   def cons[A](hd: => A, tl: => LazyList[A]): LazyList[A] =
@@ -55,8 +73,3 @@ object LazyList:
   def apply[A](as: A*): LazyList[A] =
     if as.isEmpty then empty
     else cons(as.head, apply(as.tail*))
-
-  def main(args: Array[String]): Unit =
-    val nums = Cons(() => 1, () => Cons(() => 2, () => Empty))
-    val fruits = cons("banana", cons("dragon fruit", empty))
-    val people = cons("Romain", cons("Claude", cons("Guillaume", empty)))
