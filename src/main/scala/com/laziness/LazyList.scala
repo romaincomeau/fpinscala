@@ -62,6 +62,26 @@ enum LazyList[+A]:
   def takeWhileViaFoldRight(p: A => Boolean): LazyList[A] =
     foldRight(empty)((a, b) => if(p(a)) then cons(a, b) else empty)
 
+  def headOptionViaFoldRight: Option[A] =
+    foldRight(None: Option[A])((h, _) => Some(h))
+
+  def map[B](f: A => B): LazyList[B] =
+    foldRight(empty[B])((h, acc) => cons(f(h), acc))
+
+  def filter(f: A => Boolean): LazyList[A] =
+    foldRight(empty[A])((h, acc) => if f(h) then cons(h, acc) else acc)
+
+  def append[A2>:A](that: => LazyList[A2]): LazyList[A2] =
+    foldRight(that)((a, acc) => cons(a, acc))
+
+
+  def flatMap[B](f: A => LazyList[B]): LazyList[B] =
+    foldRight(empty[B])((a, acc) => f(a).append(acc))
+
+  def find(p: A => Boolean): Option[A] =
+    filter(p).headOptionViaFoldRight
+
+
 object LazyList:
   def cons[A](hd: => A, tl: => LazyList[A]): LazyList[A] =
     lazy val head = hd
