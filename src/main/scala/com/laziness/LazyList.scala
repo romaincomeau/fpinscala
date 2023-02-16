@@ -85,6 +85,8 @@ enum LazyList[+A]:
   def find(p: A => Boolean): Option[A] =
     filter(p).headOptionViaFoldRight
 
+
+
 object LazyList:
   def cons[A](hd: => A, tl: => LazyList[A]): LazyList[A] =
     lazy val head = hd
@@ -118,9 +120,17 @@ object LazyList:
     case Some((h, s)) => cons(h, unfold(s)(f))
     case None         => empty
 
+
   def fibsViaUnfold =
-    unfold((0, 1)) { case (f0, f1) => Some((f0,(f1,f0+f1))) }
+    unfold((0,1)) { case (current, next) =>
+      Some((current, (next, current + next)))
+    }
     
+  def constantViaUnfold[A](a: A): LazyList[A] =
+    unfold(())(_ => Some((a, ())))
+
+  def onesViaUnfold: LazyList[Int] = 
+    unfold(())(_ => Some((1, ())))
 
   @main def x: Unit =
     val xs = unfold(0)(x => Some(x + 1, x + 1))
