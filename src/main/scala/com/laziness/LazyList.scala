@@ -59,8 +59,13 @@ enum LazyList[+A]:
   def forAll(p: A => Boolean): Boolean =
     foldRight(true)((a, b) => p(a) && b)
 
+  def take(n: Int): LazyList[A] = this match
+    case Cons(h, t) if n > 1  => cons(h(), t().take(n - 1))
+    case Cons(h, _) if n == 1 => cons(h(), empty)
+    case _                    => empty
+
   def takeWhileViaFoldRight(p: A => Boolean): LazyList[A] =
-    foldRight(empty)((a, b) => if(p(a)) then cons(a, b) else empty)
+    foldRight(empty)((a, b) => if (p(a)) then cons(a, b) else empty)
 
   def headOptionViaFoldRight: Option[A] =
     foldRight(None: Option[A])((h, _) => Some(h))
@@ -71,16 +76,14 @@ enum LazyList[+A]:
   def filter(f: A => Boolean): LazyList[A] =
     foldRight(empty[A])((h, acc) => if f(h) then cons(h, acc) else acc)
 
-  def append[A2>:A](that: => LazyList[A2]): LazyList[A2] =
+  def append[A2 >: A](that: => LazyList[A2]): LazyList[A2] =
     foldRight(that)((a, acc) => cons(a, acc))
-
 
   def flatMap[B](f: A => LazyList[B]): LazyList[B] =
     foldRight(empty[B])((a, acc) => f(a).append(acc))
 
   def find(p: A => Boolean): Option[A] =
     filter(p).headOptionViaFoldRight
-
 
 object LazyList:
   def cons[A](hd: => A, tl: => LazyList[A]): LazyList[A] =
@@ -93,3 +96,32 @@ object LazyList:
   def apply[A](as: A*): LazyList[A] =
     if as.isEmpty then empty
     else cons(as.head, apply(as.tail*))
+
+  val ones: LazyList[Int] = cons(1, ones)
+
+  def constant[A](a: A): LazyList[A] =
+    cons(a, constant(a))
+
+  def constant_2[A](a: A): LazyList[A] =
+    lazy val tail: LazyList[A] = Cons(() => a, () => tail)
+    tail
+
+  def from(n: Int): LazyList[Int] =
+    cons(n, from(n + 1))
+
+  val fibs =
+    def go(f0: Int, f1: Int): LazyList[Int] =
+      cons(f0, go(f1, f0 + f1))
+    go(0, 1)
+
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): LazyList[A] = f(z) match
+    case Some((h, s)) => cons(h, unfold(s)(f))
+    case None         => empty
+
+  def fibsViaUnfold =
+    unfold((0, 1)) { case (f0, f1) => Some((f0,(f1,f0+f1))) }
+    
+
+  @main def x: Unit =
+    val xs = unfold(0)(x => Some(x + 1, x + 1))
+    println(xs.take(10).toList)
