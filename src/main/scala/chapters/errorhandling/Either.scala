@@ -1,4 +1,4 @@
-package com.errorhandling
+package chapters.errorhandling
 
 import scala.{Either as _, Left as _, Right as _}
 import scala.util.control.NonFatal
