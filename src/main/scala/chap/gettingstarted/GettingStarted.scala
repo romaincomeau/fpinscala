@@ -1,4 +1,4 @@
-package chapters.gettingstarted
+package chap.gettingstarted
 
 object MyModule {
   def abs(n: Int): Int =

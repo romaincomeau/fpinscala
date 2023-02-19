@@ -1,4 +1,4 @@
-package chapters.parallelism
+package chap.parallelism
 
 import java.util.concurrent._
 import language.implicitConversions

@@ -1,4 +1,4 @@
-package chapters.laziness
+package chap.laziness
 
 import LazyList.*
 

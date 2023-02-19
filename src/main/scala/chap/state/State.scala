@@ -1,4 +1,4 @@
-package chapters.state
+package chap.state
 
 opaque type State[S, +A] = S => (A, S)
 

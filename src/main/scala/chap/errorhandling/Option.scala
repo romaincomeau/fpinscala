@@ -1,4 +1,4 @@
-package chapters.errorhandling
+package chap.errorhandling
 
 import scala.{Option as _, Some as _, None as _} // hide std lib
 
