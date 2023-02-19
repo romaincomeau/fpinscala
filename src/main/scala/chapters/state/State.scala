@@ -1,5 +1,13 @@
 package chapters.state
 
+opaque type State[S, +A] = S => (A, S)
+
+object State:
+  extension [S, A](underlying: State[S, A])
+    def run(s: S): (A, S) = underlying(s)
+
+
+
 trait RNG:
   def nextInt: (Int, RNG)
 
@@ -40,6 +48,15 @@ object RNG:
       val (b, rng2) = rb(rng1)
       (f(a, b), rng2)
 
+
+  def both[A,B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
+    map2(ra, rb)((_, _))
+
+  val randIntDouble: Rand[(Int, Double)] =
+    both(int, double)
+
+  val randDoubleInt: Rand[(Double, Int)] =
+    both(double, int)
 
 
   def double(rng: RNG): (Double, RNG) =
